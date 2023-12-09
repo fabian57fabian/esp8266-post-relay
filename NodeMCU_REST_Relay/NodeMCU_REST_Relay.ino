@@ -25,6 +25,9 @@ bool isRelayActive(){
   return digitalRead(relayPin) == 0;
 }
 
+// Base64-encoded favicon image data
+const char *faviconBase64 = "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAA2FBMVEVHcEwlpVslp1wRTyvhTj3nTDwnrmAnrmAkolknrmAOQSQKLxolqFwmq14NPCEQSSgjnVYLNR0Ybz1XlVY9HRRak1Z9KSBCIBYadEDLQzTORDWEKyIlpVshk1Elp1whllMdhEkmrF8UWzInrmAYbj0mrV8eiEsbe0QimFMnrmAnrmAJKxcfjk4lplseikwVYjYdg0gnrmAKLxonrmAadEAnrmAnrmAnrmAjnFYnrmAmrV8imVUmql4mrF8hlFIjnVYkpFsmq14imFQjnlcmql0kpVshlVIhl1Pwn0+zAAAAOXRSTlMAosQX4dv8+6LeDgfBxw4Xygg8owejMwc8T08zpHbsdl3+K/RVxGFIl/HhCGrzdyxN5Qn9WvLI9p1SZGE4AAAAi0lEQVQY01WLVxaCQBAEVwVWFHOOmHNOOEMw6/1vJMqKTP1VvW7GPIo1RqjIcpUWSaKeL+RKJGQ5Lwc9qQKosUCIgkvo7ynNQryEI36IJ84n00xn6AOg/vMGCHQRWs27jWhb84EIs/bjdn06zmvh+ZB/94igrD7eGYPPfumGaW/Un3SVrbE+HHcb9gZRvRQKqdxDQwAAAABJRU5ErkJggg==";
+
 void setup() {
   pinMode(relayPin, OUTPUT);
   setRelay(false);
@@ -45,6 +48,9 @@ void setup() {
 
   // Define the root endpoint for serving the "hello" page
   server.on("/", HTTP_GET, handleRoot);
+
+  // Define the endpoint for serving the favicon
+  server.on("/favicon.ico", HTTP_GET, handleFavicon);
 
   // Define the endpoint for handling JSON POST requests
   server.on("/control", HTTP_POST, handleControl);
@@ -83,6 +89,7 @@ const char *htmlContent = R"(
   <html>
     <head>
       <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="icon" href="data:image/x-icon;base64,%s_favicon" type="image/x-icon">
       <style>
         body {
           display: flex;
@@ -145,7 +152,7 @@ const char *htmlContent = R"(
       <h1>Albero di Natale</h1>
       <form id='controlForm'>
         <label class='toggle'>
-          <input type='checkbox' name='relay' id='relay' onchange='sendFormData()' %s>
+          <input type='checkbox' name='relay' id='relay' onchange='sendFormData()' %s_checked>
           <span class='slider'></span>
         </label>
       </form>
@@ -174,9 +181,17 @@ void handleRoot() {
   String html = String(htmlContent);
   
   // Check the current state of the relay and update the checkbox accordingly
-  html.replace("%s", isRelayActive() ? "checked" : "");
+  html.replace("%s_checked", isRelayActive() ? "checked" : "");
+
+  // Replace %s in the favicon link with the actual base64-encoded favicon data
+  html.replace("%s_favicon", faviconBase64);
   
   server.send(200, "text/html", html);
+}
+
+void handleFavicon() {
+  // Serve the embedded favicon
+  server.send(200, "image/x-icon", faviconBase64);
 }
 
 void handleControl() {
