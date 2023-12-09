@@ -4,20 +4,30 @@
 
 #define DEBUG 0
 
-const char *ssid = "TIM-75900271-2.4Ghz";
-const char *password = "RS9ctGbY3kDTcDDbDxEtK5Tx";
+#include "secrets.h"
+const char *ssid = WIFI_SSID;
+const char *password = WIFI_PASS;
 /*
 IPAddress staticIP(192, 168, 1, 199);  // Set your desired static IP address
 IPAddress gateway(192, 168, 1, 1);      // Set your router's IP address
 IPAddress subnet(255, 255, 255, 0);     // Set your subnet mask
 */
 
-const int relayPin = 0;  // Define the pin connected to the relay, GPIO0 = D3
+const int relayPin = 14;  // Define the pin connected to the relay, GPIO14 = D5
 
 ESP8266WebServer server(80);
 
+void setRelay(bool active){
+  digitalWrite(relayPin, active ? LOW : HIGH); // since it is NC, it is reversed
+}
+
+bool isRelayActive(){
+  return digitalRead(relayPin) == 0;
+}
+
 void setup() {
   pinMode(relayPin, OUTPUT);
+  setRelay(false);
   Serial.begin(115200);
 
   // Connect to Wi-Fi with a static IP
@@ -143,7 +153,7 @@ const char *htmlContent = R"(
         function sendFormData() {
           var form = document.getElementById('controlForm');
           var formData = {
-            relay: !form.relay.checked
+            relay: form.relay.checked
           };
 
           fetch('/control', {
@@ -164,7 +174,7 @@ void handleRoot() {
   String html = String(htmlContent);
   
   // Check the current state of the relay and update the checkbox accordingly
-  html.replace("%s", digitalRead(relayPin) == 0 ? "checked" : "");
+  html.replace("%s", isRelayActive() ? "checked" : "");
   
   server.send(200, "text/html", html);
 }
@@ -195,7 +205,7 @@ void handleControl() {
       bool relayState = doc["relay"];
 
       // Set the relay state
-      digitalWrite(relayPin, relayState ? HIGH : LOW);
+      setRelay(relayState);
 
       // Respond with success
       server.send(200, "application/json", "{\"status\":\"success\",\"message\":\"Relay state changed\"}");
