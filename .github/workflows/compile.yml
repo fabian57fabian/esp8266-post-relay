@@ -1,0 +1,24 @@
+name: LibraryBuild
+on: [push, pull_request]
+jobs:
+  build:
+    name: Compile sketch for generic esp8266
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Create secrets.h file
+      run: |
+        echo "#define WIFI_SSID \"my_ssid\"" >> NodeMCU_REST_Relay/secrets.h
+        echo "#define WIFI_PASS \"my_pass\"" >> NodeMCU_REST_Relay/secrets.h
+      
+    - name: Compile all examples
+      uses: ArminJo/arduino-test-compile@v3
+      with:
+        arduino-board-fqbn: esp8266:esp8266:huzzah:eesz=4M3M,xtal=80
+        platform-url: https://arduino.esp8266.com/stable/package_esp8266com_index.json
+        required-libraries: Servo,ArduinoJson
+        sketches-exclude: WhistleSwitch 50Hz
+        build-properties: '{ "WhistleSwitch": "-DDEBUG -DFREQUENCY_RANGE_LOW", "SimpleFrequencyDetector": "-DINFO" }'
