@@ -1,0 +1,118 @@
+{
+	"info": {
+		"_postman_id": "76e50173-6082-4d59-b505-03a943b41d18",
+		"name": "esp8266 relay REST",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "4783288"
+	},
+	"item": [
+		{
+			"name": "Turn On relay",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"relay\": true\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/control",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"control"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Turn Off Relay",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"relay\": false\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/control",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"control"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Home page",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"relay\": true\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "url",
+			"value": "http://192.168.1.60",
+			"type": "string"
+		}
+	]
+}

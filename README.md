@@ -8,7 +8,7 @@ A simple http REST webserver in a NodeMCU (ESP8266) microcontroller with a Relay
   <img width="60%" alt="Project schematics" src="Schemas/Sketch_bb.jpg">
 </p>
 
-## Usage
+## Installation and Flash
 
 Clone the repo. Then:
 
@@ -20,3 +20,12 @@ Clone the repo. Then:
 * Install [CH34x](https://sparks.gogo.co.nz/ch340.html) or [CP210X](https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers?tab=downloads) drivers depending on your NodeMCU (bigger is 0.9 needs CH34x, smaller is 1.0 and needs CP210x)
 * Copy example_secrets.h to secrets.h and set your wifi credentials
 * Connect, select the COM port and flash
+
+## API
+
+A complete API with example can be found [here](API/ApiExamplePostmanCollection.json).
+
+The API are:
+
+- simple webserver on '/'
+- POST on '/control' with json like `{"relay": false}` or `{"relay": false}` to change realy state
