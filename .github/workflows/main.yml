@@ -2,13 +2,16 @@ name: LibraryBuild
 on: [push, pull_request]
 jobs:
   build:
-    name: Test compiling examples for esp8266
+    name: Compile sketch for generic esp8266
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout
       uses: actions/checkout@v3
 
+    - name: Create secrets.h file
+      run: echo "#define WIFI_SSID \"my_ssid\"\n#define WIFI_PASS \"my_pass\"" > NodeMCU_REST_Relay/secrets.h
+      
     - name: Compile all examples
       uses: ArminJo/arduino-test-compile@v3
       with:
