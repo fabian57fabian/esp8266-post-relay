@@ -1,6 +1,10 @@
-#NodeMCU_REST_Relay
+# NodeMCU_REST_Relay
 
 A simple http REST webserver in a NodeMCU (ESP8266) microcontroller with a Relay.
+
+<p align="center">
+  <img width="460" height="300" alt="Project schematics" src="Sketch/Sketch_bb.jpg">
+</p>
 
 ## Usage
 
