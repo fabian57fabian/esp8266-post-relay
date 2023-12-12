@@ -1,4 +1,4 @@
-name: LibraryBuild
+name: Sketch Compile
 on: [push, pull_request]
 jobs:
   build:
