@@ -5,7 +5,7 @@
 A simple http REST webserver in a NodeMCU (ESP8266) microcontroller with a Relay.
 
 <p align="center">
-  <img width="60%" alt="Project schematics" src="Sketch/Sketch_bb.jpg">
+  <img width="60%" alt="Project schematics" src="Schemas/Sketch_bb.jpg">
 </p>
 
 ## Usage
