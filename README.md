@@ -1,5 +1,7 @@
 # NodeMCU_REST_Relay
 
+[![Sketch Compile](https://github.com/fabian57fabian/esp8266-post-relay/actions/workflows/compile.yml/badge.svg)](https://github.com/fabian57fabian/esp8266-post-relay/actions/workflows/compile.yml)
+
 A simple http REST webserver in a NodeMCU (ESP8266) microcontroller with a Relay.
 
 <p align="center">
