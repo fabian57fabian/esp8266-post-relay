@@ -28,6 +28,8 @@ bool isRelayActive(){
 // Base64-encoded favicon image data
 const char *faviconBase64 = "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAA2FBMVEVHcEwlpVslp1wRTyvhTj3nTDwnrmAnrmAkolknrmAOQSQKLxolqFwmq14NPCEQSSgjnVYLNR0Ybz1XlVY9HRRak1Z9KSBCIBYadEDLQzTORDWEKyIlpVshk1Elp1whllMdhEkmrF8UWzInrmAYbj0mrV8eiEsbe0QimFMnrmAnrmAJKxcfjk4lplseikwVYjYdg0gnrmAKLxonrmAadEAnrmAnrmAnrmAjnFYnrmAmrV8imVUmql4mrF8hlFIjnVYkpFsmq14imFQjnlcmql0kpVshlVIhl1Pwn0+zAAAAOXRSTlMAosQX4dv8+6LeDgfBxw4Xygg8owejMwc8T08zpHbsdl3+K/RVxGFIl/HhCGrzdyxN5Qn9WvLI9p1SZGE4AAAAi0lEQVQY01WLVxaCQBAEVwVWFHOOmHNOOEMw6/1vJMqKTP1VvW7GPIo1RqjIcpUWSaKeL+RKJGQ5Lwc9qQKosUCIgkvo7ynNQryEI36IJ84n00xn6AOg/vMGCHQRWs27jWhb84EIs/bjdn06zmvh+ZB/94igrD7eGYPPfumGaW/Un3SVrbE+HHcb9gZRvRQKqdxDQwAAAABJRU5ErkJggg==";
 
+String htmlContent;  // Variable to store the HTML content
+
 void setup() {
   pinMode(relayPin, OUTPUT);
   setRelay(false);
@@ -45,6 +47,9 @@ void setup() {
   Serial.println("\nConnected to WiFi");
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
+
+  // Load HTML content from the file
+  loadHtmlContent();
 
   // Define the root endpoint for serving the "hello" page
   server.on("/", HTTP_GET, handleRoot);
@@ -70,6 +75,24 @@ void loop() {
   }
 }
 
+void loadHtmlContent() {
+  // Load HTML content from the file
+  if (SPIFFS.begin()) {
+    File file = SPIFFS.open("/home.html", "r");
+    if (file) {
+      while (file.available()) {
+        htmlContent += (char)file.read();
+      }
+      file.close();
+    } else {
+      Serial.println("Failed to open content.html");
+    }
+    SPIFFS.end();
+  } else {
+    Serial.println("Failed to mount file system");
+  }
+}
+
 void connectToWiFi() {
   // Attempt to connect to WiFi
   WiFi.begin(ssid, password);
@@ -83,102 +106,9 @@ void connectToWiFi() {
   if (DEBUG) Serial.println("");
 }
 
-
-// Define the HTML content for the root ("/") path
-const char *htmlContent = R"(
-  <html>
-    <head>
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-      <link rel="icon" href="data:image/x-icon;base64,%s_favicon" type="image/x-icon">
-      <style>
-        body {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          height: 100vh;
-          margin: 0;
-        }
-        h1, form {
-          text-align: center;
-        }
-        .toggle {
-          position: relative;
-          display: inline-block;
-          width: 60px;
-          height: 34px;
-        }
-        .toggle input {
-          opacity: 0;
-          width: 0;
-          height: 0;
-        }
-        .slider {
-          position: absolute;
-          cursor: pointer;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background-color: #ccc;
-          -webkit-transition: .4s;
-          transition: .4s;
-        }
-        .slider:before {
-          position: absolute;
-          content: '';
-          height: 26px;
-          width: 26px;
-          left: 4px;
-          bottom: 4px;
-          background-color: white;
-          -webkit-transition: .4s;
-          transition: .4s;
-        }
-        .toggle input:checked + .slider {
-          background-color: #2196F3;  /* Changed color when checked to blue */
-        }
-        input:focus + .slider {
-          box-shadow: 0 0 1px #ccc;
-        }
-        input:checked + .slider:before {
-          -webkit-transform: translateX(26px);
-          -ms-transform: translateX(26px);
-          transform: translateX(26px);
-        }
-      </style>
-    </head>
-    <body>
-      <h1>Albero di Natale</h1>
-      <form id='controlForm'>
-        <label class='toggle'>
-          <input type='checkbox' name='relay' id='relay' onchange='sendFormData()' %s_checked>
-          <span class='slider'></span>
-        </label>
-      </form>
-      <script>
-        function sendFormData() {
-          var form = document.getElementById('controlForm');
-          var formData = {
-            relay: form.relay.checked
-          };
-
-          fetch('/control', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formData)
-          });
-        }
-      </script>
-    </body>
-  </html>
-)";
-
 void handleRoot() {
   // Handle requests to the root ("/") path
-  String html = String(htmlContent);
+  String html = htmlContent;
   
   // Check the current state of the relay and update the checkbox accordingly
   html.replace("%s_checked", isRelayActive() ? "checked" : "");
