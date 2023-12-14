@@ -7,11 +7,10 @@
 #include "secrets.h"
 const char *ssid = WIFI_SSID;
 const char *password = WIFI_PASS;
-/*
-IPAddress staticIP(192, 168, 1, 199);  // Set your desired static IP address
+
+IPAddress staticIP(192, 168, 1, 57);    // Set your desired static IP address
 IPAddress gateway(192, 168, 1, 1);      // Set your router's IP address
 IPAddress subnet(255, 255, 255, 0);     // Set your subnet mask
-*/
 
 const int relayPin = 14;  // Define the pin connected to the relay, GPIO14 = D5
 
@@ -28,7 +27,95 @@ bool isRelayActive(){
 // Base64-encoded favicon image data
 const char *faviconBase64 = "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAA2FBMVEVHcEwlpVslp1wRTyvhTj3nTDwnrmAnrmAkolknrmAOQSQKLxolqFwmq14NPCEQSSgjnVYLNR0Ybz1XlVY9HRRak1Z9KSBCIBYadEDLQzTORDWEKyIlpVshk1Elp1whllMdhEkmrF8UWzInrmAYbj0mrV8eiEsbe0QimFMnrmAnrmAJKxcfjk4lplseikwVYjYdg0gnrmAKLxonrmAadEAnrmAnrmAnrmAjnFYnrmAmrV8imVUmql4mrF8hlFIjnVYkpFsmq14imFQjnlcmql0kpVshlVIhl1Pwn0+zAAAAOXRSTlMAosQX4dv8+6LeDgfBxw4Xygg8owejMwc8T08zpHbsdl3+K/RVxGFIl/HhCGrzdyxN5Qn9WvLI9p1SZGE4AAAAi0lEQVQY01WLVxaCQBAEVwVWFHOOmHNOOEMw6/1vJMqKTP1VvW7GPIo1RqjIcpUWSaKeL+RKJGQ5Lwc9qQKosUCIgkvo7ynNQryEI36IJ84n00xn6AOg/vMGCHQRWs27jWhb84EIs/bjdn06zmvh+ZB/94igrD7eGYPPfumGaW/Un3SVrbE+HHcb9gZRvRQKqdxDQwAAAABJRU5ErkJggg==";
 
-String htmlContent;  // Variable to store the HTML content
+const char *htmlContent = R"(<html>
+    <head>
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="icon" href="data:image/x-icon;base64,%s_favicon" type="image/x-icon">
+      <style>
+        body {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 100vh;
+          margin: 0;
+        }
+        h1, form {
+          text-align: center;
+        }
+        .toggle {
+          position: relative;
+          display: inline-block;
+          width: 60px;
+          height: 34px;
+        }
+        .toggle input {
+          opacity: 0;
+          width: 0;
+          height: 0;
+        }
+        .slider {
+          position: absolute;
+          cursor: pointer;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: #ccc;
+          -webkit-transition: .4s;
+          transition: .4s;
+        }
+        .slider:before {
+          position: absolute;
+          content: '';
+          height: 26px;
+          width: 26px;
+          left: 4px;
+          bottom: 4px;
+          background-color: white;
+          -webkit-transition: .4s;
+          transition: .4s;
+        }
+        .toggle input:checked + .slider {
+          background-color: #2196F3;  /* Changed color when checked to blue */
+        }
+        input:focus + .slider {
+          box-shadow: 0 0 1px #ccc;
+        }
+        input:checked + .slider:before {
+          -webkit-transform: translateX(26px);
+          -ms-transform: translateX(26px);
+          transform: translateX(26px);
+        }
+      </style>
+    </head>
+    <body>
+      <h1>Albero di Natale</h1>
+      <form id='controlForm'>
+        <label class='toggle'>
+          <input type='checkbox' name='relay' id='relay' onchange='sendFormData()' %s_checked>
+          <span class='slider'></span>
+        </label>
+      </form>
+      <script>
+        function sendFormData() {
+          var form = document.getElementById('controlForm');
+          var formData = {
+            relay: form.relay.checked
+          };
+
+          fetch('/control', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formData)
+          });
+        }
+      </script>
+    </body>
+  </html>
+)";
 
 void setup() {
   pinMode(relayPin, OUTPUT);
@@ -36,7 +123,7 @@ void setup() {
   Serial.begin(115200);
 
   // Connect to Wi-Fi with a static IP
-  //WiFi.config(staticIP, gateway, subnet);
+  WiFi.config(staticIP, gateway, subnet);
   Serial.println("Connecting to WiFi...");
   connectToWiFi();
   WiFi.begin(ssid, password);
@@ -48,17 +135,17 @@ void setup() {
   Serial.print("IP Address: ");
   Serial.println(WiFi.localIP());
 
-  // Load HTML content from the file
-  loadHtmlContent();
-
   // Define the root endpoint for serving the "hello" page
   server.on("/", HTTP_GET, handleRoot);
 
   // Define the endpoint for serving the favicon
   server.on("/favicon.ico", HTTP_GET, handleFavicon);
 
-  // Define the endpoint for handling JSON POST requests
+  // Define the endpoint for handling JSON POST control
   server.on("/control", HTTP_POST, handleControl);
+
+  // Define the endpoint for handling JSON GET status
+  server.on("/status", HTTP_GET, handleStatus);
 
   // Start the server
   server.begin();
@@ -72,24 +159,6 @@ void loop() {
   if (WiFi.status() != WL_CONNECTED) {
     if (DEBUG) Serial.println("WiFi connection lost. Reconnecting...");
     connectToWiFi();
-  }
-}
-
-void loadHtmlContent() {
-  // Load HTML content from the file
-  if (SPIFFS.begin()) {
-    File file = SPIFFS.open("/home.html", "r");
-    if (file) {
-      while (file.available()) {
-        htmlContent += (char)file.read();
-      }
-      file.close();
-    } else {
-      Serial.println("Failed to open content.html");
-    }
-    SPIFFS.end();
-  } else {
-    Serial.println("Failed to mount file system");
   }
 }
 
@@ -108,7 +177,7 @@ void connectToWiFi() {
 
 void handleRoot() {
   // Handle requests to the root ("/") path
-  String html = htmlContent;
+  String html = String(htmlContent);
   
   // Check the current state of the relay and update the checkbox accordingly
   html.replace("%s_checked", isRelayActive() ? "checked" : "");
@@ -122,6 +191,15 @@ void handleRoot() {
 void handleFavicon() {
   // Serve the embedded favicon
   server.send(200, "image/x-icon", faviconBase64);
+}
+
+void handleStatus(){
+  if (DEBUG) Serial.println("-> GET on /status");
+  if (isRelayActive()){
+    server.send(200, "application/json", "{\"status\":\"on\"}");
+  }else{
+    server.send(200, "application/json", "{\"status\":\"off\"}");
+  }
 }
 
 void handleControl() {

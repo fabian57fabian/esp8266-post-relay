@@ -86,6 +86,35 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Status",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"relay\": true\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/status",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"status"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"event": [
@@ -111,7 +140,7 @@
 	"variable": [
 		{
 			"key": "url",
-			"value": "http://192.168.1.60",
+			"value": "http://192.168.1.57",
 			"type": "string"
 		}
 	]
