@@ -19,6 +19,7 @@ Clone the repo. Then:
   * Sketch > Include Liobrary > Manage Libraries and install ArduinoJson
 * Install [CH34x](https://sparks.gogo.co.nz/ch340.html) or [CP210X](https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers?tab=downloads) drivers depending on your NodeMCU (bigger is 0.9 needs CH34x, smaller is 1.0 and needs CP210x)
 * Copy example_secrets.h to secrets.h and set your wifi credentials
+* If needed change the static IP address
 * Connect, select the COM port and flash
 
 ## API

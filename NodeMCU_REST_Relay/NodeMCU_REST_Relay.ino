@@ -8,6 +8,8 @@
 const char *ssid = WIFI_SSID;
 const char *password = WIFI_PASS;
 
+// If needed, set the static IP
+bool USE_STATIC_IP = true;
 IPAddress staticIP(192, 168, 1, 57);    // Set your desired static IP address
 IPAddress gateway(192, 168, 1, 1);      // Set your router's IP address
 IPAddress subnet(255, 255, 255, 0);     // Set your subnet mask
@@ -123,7 +125,9 @@ void setup() {
   Serial.begin(115200);
 
   // Connect to Wi-Fi with a static IP
-  WiFi.config(staticIP, gateway, subnet);
+  if (USE_STATIC_IP){
+    WiFi.config(staticIP, gateway, subnet);
+  }
   Serial.println("Connecting to WiFi...");
   connectToWiFi();
   WiFi.begin(ssid, password);
