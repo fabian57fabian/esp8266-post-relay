@@ -30,3 +30,4 @@ The API are:
 
 - simple webserver on '/'
 - POST on '/control' with json like `{"relay": false}` or `{"relay": false}` to change realy state
+- GET on '/status' that answers with `{"status": "on"}` or `{"status": "off"}`
